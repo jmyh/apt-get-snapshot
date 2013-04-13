@@ -1,0 +1,35 @@
+#!/usr/bin/python
+
+import re
+import sys
+from mechanize import Browser
+import subprocess
+
+package = sys.argv[1]
+version = sys.argv[2]
+b = Browser()
+
+def findlink(b, regex):
+    r = re.compile(regex)
+    for l in b.links():
+        if r.match(l.url):
+            return l
+    return None
+
+url = 'http://snapshot.debian.org/binary/%s/' % (package)
+print(url)
+
+b.open(url)
+l = findlink(b, '.*%s$' % version)
+assert l
+
+b.open(l.absolute_url)
+l = findlink(b, '.*_amd64.deb$')
+if not l:
+    l = findlink(b, '.*_all.deb$')
+assert l
+
+cmd = 'wget http://snapshot.debian.org/%s' % l.url
+print(cmd)
+subprocess.check_call(cmd, shell=True)
+

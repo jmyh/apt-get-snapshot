@@ -1,0 +1,50 @@
+apt-get-snapshot
+
+
+
+= NAME =
+
+apt-get-snapshot - Download a specific version of a debian package from snapshot.debian.org
+
+
+
+= SYNOPSIS =
+
+**apt-get-snapshot** -h
+
+**apt-get-snapshot** [-v/--verbose] <package> <version>
+
+
+
+= DESCRIPTION =
+
+**apt-get-snapshot** is a command-line tool that installs a specific version of
+a debian package after getting it from snapshot.debian.org.
+
+When using debian testing, it is not trivial to get the previous version of a
+package after it is upgraded. snapshot.debian.org is the source to go for these
+cases, but it has only a web interface. apt-get-snapshot navigates that web
+interface and fetches the desired package.
+
+
+
+= OPTIONS =
+
+**-h** Help.
+
+**-v, --verbose** Report progress.
+
+
+
+= AUTHORS =
+
+Written by [Leandro Penz http://lpenz.org].
+
+
+
+= SEE ALSO =
+
+- **apt-get**(3)
+
+
+
