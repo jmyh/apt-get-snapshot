@@ -1,13 +1,39 @@
 #!/usr/bin/python
 
+import os
+import shutil
 import re
 import sys
 from mechanize import Browser
 import subprocess
+from optparse import OptionParser
 
-package = sys.argv[1]
-version = sys.argv[2]
-b = Browser()
+PROGRAM_NAME = "apt-get-snapshot"
+PROGRAM_VERSION = "1.0"
+
+__version__ = PROGRAM_VERSION
+
+
+# General useful functions: ##################################################
+
+class Dprint(object):
+    def __init__(self, verbose):
+        self.enable = verbose
+    def __call__(self, s):
+        if not self.enable:
+            return
+        sys.stdout.write(s)
+dprint = Dprint(verbose = True)
+
+
+# Core functions: ############################################################
+
+def debarch():
+    p = subprocess.Popen(['dpkg-architecture','-qDEB_HOST_ARCH'], stdout = subprocess.PIPE)
+    rv = p.stdout.next()
+    assert p.wait() == 0, 'Could not discover architecture with dpkg-architecture, please use -a option.'
+    return rv
+
 
 def findlink(b, regex):
     r = re.compile(regex)
@@ -16,20 +42,61 @@ def findlink(b, regex):
             return l
     return None
 
-url = 'http://snapshot.debian.org/binary/%s/' % (package)
-print(url)
 
-b.open(url)
-l = findlink(b, '.*%s$' % version)
-assert l
+def aptgetsnapshot(package, version, arch = None, verbose=True):
+    if not arch:
+        arch = debarch()
 
-b.open(l.absolute_url)
-l = findlink(b, '.*_amd64.deb$')
-if not l:
-    l = findlink(b, '.*_all.deb$')
-assert l
+    b = Browser()
 
-cmd = 'wget http://snapshot.debian.org/%s' % l.url
-print(cmd)
-subprocess.check_call(cmd, shell=True)
+    url = 'http://snapshot.debian.org/binary/%s/' % (package)
+    dprint('Getting %s for package version index\n' % url)
+    b.open(url)
+
+    l = findlink(b, '.*%s$' % version)
+    assert l, 'could not find version %s of %s' % (version, package)
+
+    dprint('Getting %s for package binary URLs\n' % l.absolute_url)
+    b.open(l.absolute_url)
+
+    l = findlink(b, '.*_%s.deb$' % arch)
+    if not l:
+        l = findlink(b, '.*_all.deb$')
+    assert l, 'Could not find neither architecture %s or all for %s version %s' % (arch, package, version)
+
+    dprint('Getting package from %s\n' % l.absolute_url)
+    fname = os.path.basename(l.absolute_url)
+    tmpfile = b.retrieve(l.absolute_url)[0]
+    shutil.move(tmpfile, fname)
+
+
+# Main: ######################################################################
+
+def main():
+    parser = OptionParser(usage='''\
+Usage: %prog [-h]
+       %prog [-v] <package> <version>\
+''',
+                          version="%prog "+__version__,
+                          description='''\
+apt-get-snapshot is a command-line tool that downloads a specific version of
+a debian package from snapshot.debian.org.
+'''
+                        )
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      action="store_true", default=False,
+                      help="Be verbose.")
+    parser.add_option("-a", "--architecture", dest="arch",
+                      default=None,
+                      help="Get package for the specified architecture.")
+    (config, args) = parser.parse_args()
+    if len(args) != 2:
+        parser.error('expected arguments not found')
+    global dprint
+    dprint = Dprint(config.verbose)
+    aptgetsnapshot(args[0], args[1], arch = config.arch, verbose = config.verbose)
+
+
+if __name__ == '__main__':
+    main()
 
