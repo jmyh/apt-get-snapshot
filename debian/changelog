@@ -1,0 +1,5 @@
+apt-get-snapshot (1.0-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Leandro Lisboa Penz <lpenz@lpenz.org>  Sat, 13 Apr 2013 10:47:41 -0300
