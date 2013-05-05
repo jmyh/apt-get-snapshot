@@ -1,3 +1,9 @@
+apt-get-snapshot (1.1-1) unstable; urgency=low
+
+  * New upstream version 1.1 with many fixes.
+
+ -- Leandro Lisboa Penz <lpenz@lpenz.org>  Sun, 05 May 2013 18:03:00 -0300
+
 apt-get-snapshot (1.0-1) unstable; urgency=low
 
   * Initial release.
