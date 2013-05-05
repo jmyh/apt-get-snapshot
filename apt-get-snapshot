@@ -59,9 +59,9 @@ def aptgetsnapshot(package, version, arch = None, verbose=True):
     dprint('Getting %s for package binary URLs\n' % l.absolute_url)
     b.open(l.absolute_url)
 
-    l = findlink(b, '.*_%s.deb$' % arch)
+    l = findlink(b, r'.*/?%s_[0-9:.-]+_%s.deb$' % (re.escape(package), arch))
     if not l:
-        l = findlink(b, '.*_all.deb$')
+        l = findlink(b, r'.*/?%s_[0-9:.-]+_all.deb$' % (re.escape(package)))
     assert l, 'Could not find neither architecture %s or all for %s version %s' % (arch, package, version)
 
     dprint('Getting package from %s\n' % l.absolute_url)
