@@ -9,7 +9,7 @@ import subprocess
 from optparse import OptionParser
 
 PROGRAM_NAME = "apt-get-snapshot"
-PROGRAM_VERSION = "1.0"
+PROGRAM_VERSION = "1.1"
 
 __version__ = PROGRAM_VERSION
 
