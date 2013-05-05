@@ -32,7 +32,7 @@ def debarch():
     p = subprocess.Popen(['dpkg-architecture','-qDEB_HOST_ARCH'], stdout = subprocess.PIPE)
     rv = p.stdout.next()
     assert p.wait() == 0, 'Could not discover architecture with dpkg-architecture, please use -a option.'
-    return rv
+    return rv.rstrip('\n')
 
 
 def findlink(b, regex):
