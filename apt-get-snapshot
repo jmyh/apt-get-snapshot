@@ -4,6 +4,8 @@ import os
 import shutil
 import re
 import sys
+from urllib.parse import quote
+
 from mechanize import Browser
 import subprocess
 from optparse import OptionParser
@@ -38,7 +40,7 @@ def debarch():
 def findlink(b, regex):
     r = re.compile(regex)
     for l in b.links():
-        if r.match(l.url):
+        if r.search(l.url):
             return l
     return None
 
@@ -53,15 +55,15 @@ def aptgetsnapshot(package, version, arch = None, verbose=True):
     dprint('Getting %s for package version index\n' % url)
     b.open(url)
 
-    l = findlink(b, '.*%s$' % version)
+    l = findlink(b, r'\/%s\/' % re.escape(quote(version)))
     assert l, 'could not find version %s of %s' % (version, package)
 
     dprint('Getting %s for package binary URLs\n' % l.absolute_url)
     b.open(l.absolute_url)
 
-    l = findlink(b, r'.*/?%s_[0-9:.-]+_%s.deb$' % (re.escape(package), arch))
+    l = findlink(b, r'.*/?%s_[0-9a-z:\.\-~+]+_%s\.u?deb$' % (re.escape(package), arch))
     if not l:
-        l = findlink(b, r'.*/?%s_[0-9:.-]+_all.deb$' % (re.escape(package)))
+        l = findlink(b, r'.*/?%s_[0-9a-z:\.\-~+]+_all.u?deb$' % (re.escape(package)))
     assert l, 'Could not find neither architecture %s or all for %s version %s' % (arch, package, version)
 
     dprint('Getting package from %s\n' % l.absolute_url)
